@@ -7,6 +7,9 @@ const LEITURAS = 5;
 const SILENCIO_MS = 600; // sem leitura válida por esse tempo, a tela volta a "Toque uma corda"
 const AFINADA_ENTRA = 5; // cents
 const AFINADA_SAI = 8; // folga para o estado não piscar
+const MUDO = 1e-5; // abaixo disso o microfone não está enviando nada, nem ruído
+const MUDO_MS = 2000;
+const CHAVE_MICROFONE = "afinador.microfone";
 
 const el = {
   notaNome: document.querySelector("#nota-nome"),
@@ -16,6 +19,8 @@ const el = {
   cents: document.querySelector("#cents"),
   aviso: document.querySelector("#aviso"),
   mic: document.querySelector("#mic"),
+  microfoneBloco: document.querySelector("#microfone-bloco"),
+  microfone: document.querySelector("#microfone"),
   modo: document.querySelector("#modo"),
   cordas: document.querySelector("#cordas"),
   hz: document.querySelector("#hz"),
@@ -28,6 +33,8 @@ let leituras = [];
 let ultimaLeitura = 0;
 let afinada = false;
 let ultimoAnuncio = "";
+let ultimoSom = 0;
+let avisouMudo = false;
 
 const MODO_AUTO = "Automático: a corda tocada é detectada sozinha. Toque numa corda da lista para travar nela.";
 
@@ -156,11 +163,29 @@ function mostrarLeitura(freq) {
   );
 }
 
+// Microfone virtual ou mudo entrega zero absoluto. Um microfone de verdade
+// sempre tem algum ruído, então dá para distinguir de "ninguém tocou ainda".
+function conferirMudo(volume, agora) {
+  if (volume > MUDO) {
+    ultimoSom = agora;
+    if (avisouMudo) {
+      avisouMudo = false;
+      mostrarAviso("");
+    }
+  } else if (!avisouMudo && agora - ultimoSom > MUDO_MS) {
+    avisouMudo = true;
+    mostrarAviso(
+      `O microfone "${audio.rotulo}" não está enviando som. Escolha outro em Microfone, logo abaixo do botão.`,
+    );
+  }
+}
+
 function ler() {
   audio.analyser.getFloatTimeDomainData(audio.buffer);
   const agora = performance.now();
-  const freq =
-    rms(audio.buffer) >= VOLUME_MINIMO ? detectPitch(audio.buffer, audio.ctx.sampleRate) : 0;
+  const volume = rms(audio.buffer);
+  conferirMudo(volume, agora);
+  const freq = volume >= VOLUME_MINIMO ? detectPitch(audio.buffer, audio.ctx.sampleRate) : 0;
 
   if (freq === 0) {
     if (leituras.length && agora - ultimaLeitura > SILENCIO_MS) {
@@ -188,16 +213,60 @@ function botao(texto, { ativo = false, desabilitado = false } = {}) {
   el.mic.disabled = desabilitado;
 }
 
+function microfoneSalvo() {
+  try {
+    return localStorage.getItem(CHAVE_MICROFONE);
+  } catch {
+    return null;
+  }
+}
+
+function salvarMicrofone(id) {
+  try {
+    localStorage.setItem(CHAVE_MICROFONE, id);
+  } catch {
+    // Sem armazenamento, a escolha vale só para esta visita.
+  }
+}
+
+// Os nomes dos microfones só ficam disponíveis depois da permissão.
+async function listarMicrofones(idAtual) {
+  const todos = await navigator.mediaDevices.enumerateDevices();
+  const entradas = todos.filter((d) => d.kind === "audioinput" && d.deviceId !== "communications");
+  el.microfone.replaceChildren();
+  entradas.forEach((d, i) => {
+    const opcao = document.createElement("option");
+    opcao.value = d.deviceId;
+    opcao.textContent = d.label || `Microfone ${i + 1}`;
+    el.microfone.append(opcao);
+  });
+  el.microfone.value = idAtual;
+  el.microfoneBloco.hidden = entradas.length < 2;
+}
+
 async function ativar() {
   mostrarAviso("");
   botao("Aguardando permissão...", { desabilitado: true });
 
+  // Sem um microfone escolhido, pede o padrão do sistema. O padrão do
+  // navegador pode ser um dispositivo virtual (de app de reunião) que só
+  // entrega silêncio.
+  const filtros = { echoCancellation: false, noiseSuppression: false, autoGainControl: false };
+  const salvo = microfoneSalvo();
   let stream;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      // Os filtros de voz do navegador distorcem o som da corda.
-      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
-    });
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        // Os filtros de voz do navegador distorcem o som da corda.
+        audio: { ...filtros, deviceId: salvo ? { exact: salvo } : { ideal: "default" } },
+      });
+    } catch (erro) {
+      // O microfone salvo não existe mais (foi desconectado): volta ao padrão.
+      if (erro.name !== "OverconstrainedError") throw erro;
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { ...filtros, deviceId: { ideal: "default" } },
+      });
+    }
   } catch (erro) {
     mostrarAviso(ERROS[erro.name] ?? "Não foi possível acessar o microfone. Tente de novo.");
     botao("Tentar novamente");
@@ -211,11 +280,22 @@ async function ativar() {
   analyser.fftSize = TAMANHO_BUFFER;
   ctx.createMediaStreamSource(stream).connect(analyser);
 
-  audio = { stream, ctx, analyser, buffer: new Float32Array(TAMANHO_BUFFER), timer: 0 };
+  const faixa = stream.getAudioTracks()[0];
+  audio = {
+    stream,
+    ctx,
+    analyser,
+    buffer: new Float32Array(TAMANHO_BUFFER),
+    timer: 0,
+    rotulo: faixa.label,
+  };
+  ultimoSom = performance.now();
+  avisouMudo = false;
   audio.timer = setInterval(ler, INTERVALO_MS);
+  listarMicrofones(faixa.getSettings().deviceId).catch(() => {});
 
   // Se o microfone for desconectado ou a permissão revogada no meio do uso.
-  stream.getAudioTracks()[0].addEventListener("ended", () => {
+  faixa.addEventListener("ended", () => {
     if (!audio) return;
     parar();
     mostrarAviso("O microfone foi desconectado. Conecte de novo e ative o microfone.");
@@ -253,4 +333,10 @@ if (!navigator.mediaDevices?.getUserMedia || !window.AudioContext) {
   el.mic.hidden = true;
 } else {
   el.mic.addEventListener("click", () => (audio ? parar() : ativar()));
+  el.microfone.addEventListener("change", () => {
+    salvarMicrofone(el.microfone.value);
+    if (!audio) return;
+    parar();
+    ativar();
+  });
 }

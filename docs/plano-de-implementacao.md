@@ -30,6 +30,7 @@ Tela única, sem menu, sem rotas e sem modal.
 | Permissão negada | o que houve, como liberar no navegador e "Tentar novamente" |
 | Sem microfone ou sem suporte | mensagem clara, sem botão que não funciona |
 | Som fora da faixa | tratado como "Toque uma corda", nunca nota errada |
+| Microfone mudo | aviso com o nome do microfone e o seletor para trocar |
 
 ## Regras
 
