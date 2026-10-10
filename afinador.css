@@ -1,0 +1,242 @@
+/* Tokens. Toda cor e todo espaçamento saem daqui. Ver .agents/preferencias.md. */
+:root {
+  color-scheme: light;
+
+  --fundo: #fbf6ec;
+  --superficie: #f3e7d0;
+  --linha: #dcc8a3;
+  --texto: #2b1d12;
+  --texto-2: #6b5440;
+  --madeira: #8f4a16;
+  --sobre-madeira: #fffaf0;
+  --afinada: #2f6b3a;
+  --fora: #a8362a;
+
+  --e1: 0.25rem;
+  --e2: 0.5rem;
+  --e3: 0.75rem;
+  --e4: 1rem;
+  --e5: 1.5rem;
+  --e6: 2rem;
+
+  --raio: 0.75rem;
+  --rapido: 0.2s ease;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.4;
+}
+
+h1, h2, p, ul { margin: 0; padding: 0; }
+
+.app {
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: var(--e5) var(--e4) var(--e6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e5);
+}
+
+.topo {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+}
+.topo img { border-radius: 0.6rem; }
+h1 { font-size: 1.25rem; line-height: 1.2; }
+h2 { font-size: 1rem; }
+.apoio { color: var(--texto-2); font-size: 0.875rem; }
+
+/* Leitura */
+.leitura { text-align: center; }
+
+.nota {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--e2);
+  line-height: 1;
+}
+.nota-nome {
+  font-size: clamp(4.5rem, 24vw, 7rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.nota-letra {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+[data-leitura="parado"] .nota-nome,
+[data-leitura="silencio"] .nota-nome { color: var(--linha); }
+
+.instrucao {
+  min-height: 2.8em;
+  margin-top: var(--e2);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+[data-leitura="parado"] .instrucao,
+[data-leitura="silencio"] .instrucao { color: var(--texto-2); font-weight: 400; font-size: 1rem; }
+[data-leitura="afinada"] .instrucao { color: var(--afinada); }
+[data-leitura="grave"] .instrucao,
+[data-leitura="aguda"] .instrucao { color: var(--fora); }
+
+/* Medidor */
+.medidor { margin-top: var(--e3); }
+.trilho {
+  position: relative;
+  height: 3rem;
+  border-radius: var(--raio);
+  background: var(--superficie);
+  overflow: hidden;
+}
+.zona {
+  position: absolute;
+  inset: 0 45%;
+  background: var(--linha);
+}
+.marca {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 1px);
+  width: 2px;
+  background: var(--texto-2);
+}
+.ponteiro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  transform: translateX(0);
+  transition: transform var(--rapido), opacity var(--rapido);
+}
+.ponteiro span {
+  width: 0.5rem;
+  margin: var(--e1) 0;
+  border-radius: var(--e1);
+  background: var(--fora);
+}
+[data-leitura="afinada"] .ponteiro span { background: var(--afinada); }
+[data-leitura="parado"] .ponteiro,
+[data-leitura="silencio"] .ponteiro { opacity: 0; }
+
+.escala {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--e1);
+  color: var(--texto-2);
+  font-size: 0.75rem;
+}
+.cents {
+  margin-top: var(--e1);
+  color: var(--texto-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Aviso de erro */
+.aviso {
+  padding: var(--e3) var(--e4);
+  border-left: 4px solid var(--fora);
+  border-radius: var(--e1);
+  background: var(--superficie);
+}
+
+/* Botão */
+.botao {
+  min-height: 3rem;
+  padding: var(--e3) var(--e5);
+  border: 2px solid var(--madeira);
+  border-radius: var(--raio);
+  background: var(--madeira);
+  color: var(--sobre-madeira);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--rapido), color var(--rapido);
+}
+.botao:hover { background: var(--texto); border-color: var(--texto); }
+.botao:active { transform: translateY(1px); }
+.botao[data-ativo="true"] { background: transparent; color: var(--madeira); }
+.botao[data-ativo="true"]:hover { background: var(--superficie); border-color: var(--madeira); }
+.botao:disabled { opacity: 0.6; cursor: default; }
+.botao:disabled:hover { background: var(--madeira); border-color: var(--madeira); }
+
+:focus-visible {
+  outline: 3px solid var(--texto);
+  outline-offset: 2px;
+}
+
+/* Cordas */
+.cordas-bloco { display: flex; flex-direction: column; gap: var(--e2); }
+.cordas { list-style: none; display: flex; flex-direction: column; }
+.corda {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 var(--e3);
+  display: grid;
+  grid-template-columns: 2rem 2.5rem 1.5rem 1fr auto;
+  align-items: center;
+  gap: var(--e2);
+  border: 0;
+  border-radius: var(--e2);
+  background: transparent;
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--rapido);
+}
+.corda:hover { background: var(--superficie); }
+.corda-numero { color: var(--texto-2); }
+.corda-nome { font-weight: 600; }
+.corda-letra { color: var(--texto-2); }
+/* O fio: mais grosso nas cordas graves, como no violão. */
+.corda-fio {
+  height: var(--espessura);
+  border-radius: 2px;
+  background: var(--linha);
+}
+.corda-marca {
+  min-width: 4.5rem;
+  color: var(--texto-2);
+  font-size: 0.8125rem;
+  text-align: right;
+}
+.corda[aria-current="true"] { background: var(--superficie); }
+.corda[aria-current="true"] .corda-fio { background: var(--madeira); }
+.corda[aria-current="true"] .corda-marca { color: var(--texto); font-weight: 600; }
+.corda[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--madeira); }
+
+.rodape {
+  display: flex;
+  justify-content: center;
+  gap: var(--e4);
+  color: var(--texto-2);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+[hidden] { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ponteiro, .botao, .corda { transition: none; }
+  .botao:active { transform: none; }
+}
