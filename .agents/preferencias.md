@@ -8,8 +8,9 @@ Decisões do Samuel para o A-finador. Valem acima de qualquer regra genérica de
 - O ícone é o visor de um afinador de clipe, minimalista: o corpo arredondado, o arco do medidor com o ponteiro no centro e a letra **A** grande no lugar onde esses afinadores mostram a nota (normalmente um E).
 - Onde o nome aparecer por extenso, escrever "A-finador", com o hífen.
 - O ícone segue a mesma ideia do projeto beba-agua:
-  - O ícone simula o visor do afinador no estado afinado: fundo em `--texto` (ébano), arco e A em verde vivo (`#5fd068`), a faixa central do arco em verde claro (`#a8e6a1`) e o ponteiro em `--fundo` (creme), dentro da faixa.
-  - Os dois verdes existem só no ícone. Não usar na tela, que continua na paleta clara de violão.
+  - Fundo em `--madeira`, arco em `--fundo` (creme), e a letra A e o ponteiro em verde claro (`#9ceb82`), que remete ao estado afinado.
+  - Esse verde existe só no ícone. Não usar na tela, que continua na paleta clara de violão.
+  - Uma versão de fundo escuro com símbolo todo verde foi testada e descartada: mudava demais a identidade.
   - O ícone tem sempre fundo com cor. Fundo transparente foi testado e ficou ruim de ver.
   - `img/icone.svg` é o logo, com cantos arredondados. Usado no cabeçalho e na aba do navegador.
   - `img/icone-180.png`, `icone-192.png` e `icone-512.png` são o ícone do app: o mesmo desenho ocupando a imagem toda, sem cantos arredondados (o sistema arredonda).
