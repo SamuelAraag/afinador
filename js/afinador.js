@@ -49,6 +49,7 @@ let afinada = false;
 let ultimoAnuncio = "";
 let ultimoSom = 0;
 let avisouMudo = false;
+let ultimaCorda = null; // última corda detectada; fica na tela enquanto não soa outra
 let ajustes = servicoAjustes.carregar();
 let nivelAcima = null; // último estado mostrado em nivel-texto
 
@@ -137,8 +138,10 @@ function mostrarParado() {
 
 function mostrarSilencio() {
   document.body.dataset.leitura = "silencio";
-  el.notaNome.textContent = travada ? travada.nome : "A";
-  el.notaLetra.textContent = travada ? travada.letra : "";
+  // Sem som, mantém a corda que estava sendo afinada em vez de voltar ao "A".
+  const corda = travada ?? ultimaCorda;
+  el.notaNome.textContent = corda ? corda.nome : "A";
+  el.notaLetra.textContent = corda ? corda.letra : "";
   el.instrucao.textContent = travada ? `Toque a ${travada.numero}ª corda.` : "Toque uma corda.";
   el.cents.textContent = " ";
   el.hz.textContent = "";
@@ -149,6 +152,7 @@ function mostrarSilencio() {
 
 function mostrarLeitura(freq) {
   const corda = travada ?? cordaMaisProxima(freq);
+  ultimaCorda = corda;
   const cents = centsEntre(freq, corda.freq);
   const desvio = Math.abs(cents);
 
@@ -333,6 +337,7 @@ function parar() {
   audio = null;
   leituras = [];
   afinada = false;
+  ultimaCorda = null;
   botao("Ativar microfone");
   mostrarParado();
   mostrarNivel(null);
