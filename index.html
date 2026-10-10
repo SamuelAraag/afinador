@@ -57,6 +57,38 @@
       <ul id="cordas" class="cordas"></ul>
     </section>
 
+    <details class="ajustes">
+      <summary>Ajustes</summary>
+
+      <div class="ajuste">
+        <label for="sensibilidade">Sensibilidade do microfone</label>
+        <output id="sensibilidade-valor" for="sensibilidade"></output>
+        <input id="sensibilidade" type="range" aria-describedby="sensibilidade-ajuda">
+        <div class="nivel" aria-hidden="true">
+          <div id="nivel-barra" class="nivel-barra"></div>
+          <div id="nivel-minimo" class="nivel-minimo"></div>
+        </div>
+        <p id="nivel-texto" class="apoio"></p>
+        <p id="sensibilidade-ajuda" class="apoio">Define o volume mínimo para o afinador reagir. Aumente se ele não ouvir a corda; diminua se reagir a barulho do ambiente.</p>
+      </div>
+
+      <div class="ajuste">
+        <label for="margem">Margem para considerar afinada</label>
+        <output id="margem-valor" for="margem"></output>
+        <input id="margem" type="range" aria-describedby="margem-ajuda">
+        <p id="margem-ajuda" class="apoio">Desvio máximo, em cents, para aparecer "Afinada". Menor é mais exigente; abaixo de 3 fica difícil estabilizar.</p>
+      </div>
+
+      <div class="ajuste">
+        <label for="rigor">Rigor da leitura</label>
+        <output id="rigor-valor" for="rigor"></output>
+        <input id="rigor" type="range" aria-describedby="rigor-ajuda">
+        <p id="rigor-ajuda" class="apoio">O quanto a nota precisa soar limpa para ser aceita. Diminua se o afinador demorar a reconhecer a corda; aumente se aparecer nota errada.</p>
+      </div>
+
+      <button id="restaurar" class="botao-leve" type="button">Restaurar padrão</button>
+    </details>
+
     <p class="rodape"><span id="hz"></span><span>Lá = 440 Hz</span></p>
     <p id="diag" class="rodape" hidden>diagnóstico: ative o microfone</p>
 

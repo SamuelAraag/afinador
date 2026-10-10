@@ -236,6 +236,74 @@ h2 { font-size: 1rem; }
 .corda[aria-current="true"] .corda-marca { color: var(--texto); font-weight: 600; }
 .corda[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--madeira); }
 
+/* Ajustes */
+.ajustes { border-top: 1px solid var(--linha); padding-top: var(--e3); }
+.ajustes summary {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ajuste {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--e1) var(--e3);
+  align-items: baseline;
+  margin-top: var(--e4);
+}
+.ajuste label { font-weight: 600; }
+.ajuste output { color: var(--texto-2); font-variant-numeric: tabular-nums; }
+.ajuste input,
+.ajuste .nivel,
+.ajuste p { grid-column: 1 / -1; }
+.ajuste input[type="range"] {
+  width: 100%;
+  min-height: 2.75rem;
+  margin: 0;
+  accent-color: var(--madeira);
+}
+
+/* Barra de volume: mostra o som que chega e onde está o mínimo. */
+.nivel {
+  position: relative;
+  height: var(--e3);
+  border-radius: var(--e1);
+  background: var(--superficie);
+  overflow: hidden;
+}
+.nivel-barra {
+  position: absolute;
+  inset: 0;
+  background: var(--linha);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.nivel-barra[data-acima="true"] { background: var(--afinada); }
+.nivel-minimo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--texto);
+}
+
+.botao-leve {
+  min-height: 2.75rem;
+  margin-top: var(--e4);
+  padding: 0 var(--e4);
+  border: 1px solid var(--linha);
+  border-radius: var(--e2);
+  background: transparent;
+  color: var(--texto);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--rapido);
+}
+.botao-leve:hover { background: var(--superficie); }
+.botao-leve:disabled { opacity: 0.5; cursor: default; }
+.botao-leve:disabled:hover { background: transparent; }
+
 .rodape {
   display: flex;
   justify-content: center;
@@ -257,6 +325,6 @@ h2 { font-size: 1rem; }
 [hidden] { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
-  .ponteiro, .botao, .corda { transition: none; }
+  .ponteiro, .botao, .botao-leve, .corda { transition: none; }
   .botao:active { transform: none; }
 }
