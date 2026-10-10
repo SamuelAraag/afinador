@@ -1,4 +1,4 @@
-// Acesso ao microfone pela Web Audio API. Sem DOM.
+// Acesso ao microfone pela Web Audio API. Não mexe na tela.
 
 const CHAVE = "afinador.microfone";
 
@@ -54,21 +54,50 @@ async function pedirStream() {
 // Abre o microfone. Rejeita com o erro do navegador (NotAllowedError,
 // NotFoundError...) se não conseguir.
 export async function abrir(tamanhoBuffer) {
-  const stream = await pedirStream();
+  // O contexto precisa nascer dentro do toque do usuário, antes de qualquer
+  // await. No iPhone, um contexto criado depois da permissão fica suspenso.
   const ctx = new AudioContext();
-  await ctx.resume();
+  ctx.resume().catch(() => {});
+
+  let stream;
+  try {
+    stream = await pedirStream();
+  } catch (erro) {
+    ctx.close();
+    throw erro;
+  }
+
   const analyser = ctx.createAnalyser();
   analyser.fftSize = tamanhoBuffer;
   ctx.createMediaStreamSource(stream).connect(analyser);
+  // O Safari só processa nós ligados à saída. O ganho zero garante que nada
+  // do microfone toque no alto-falante.
+  const mudo = ctx.createGain();
+  mudo.gain.value = 0;
+  analyser.connect(mudo).connect(ctx.destination);
 
   const faixa = stream.getAudioTracks()[0];
   const buffer = new Float32Array(tamanhoBuffer);
   let fechado = false;
 
+  // O iOS suspende o áudio ao trocar de app, bloquear a tela ou receber
+  // ligação. Ao voltar, retoma.
+  const retomar = () => {
+    if (!fechado && ctx.state !== "running") ctx.resume().catch(() => {});
+  };
+  ctx.addEventListener("statechange", retomar);
+  document.addEventListener("visibilitychange", retomar);
+  retomar();
+
   return {
     id: faixa.getSettings().deviceId,
     rotulo: faixa.label,
     sampleRate: ctx.sampleRate,
+
+    // "running" quando o áudio está fluindo.
+    estado() {
+      return ctx.state;
+    },
 
     // Devolve sempre o mesmo buffer, com as amostras mais recentes.
     ler() {
@@ -86,6 +115,7 @@ export async function abrir(tamanhoBuffer) {
 
     fechar() {
       fechado = true;
+      document.removeEventListener("visibilitychange", retomar);
       for (const f of stream.getTracks()) f.stop();
       ctx.close();
     },

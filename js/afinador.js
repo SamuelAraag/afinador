@@ -3,7 +3,10 @@ import * as microfone from "./servicos/microfone.js";
 
 const TAMANHO_BUFFER = 4096;
 const INTERVALO_MS = 50;
-const VOLUME_MINIMO = 0.01;
+// Baixo de propósito: com os filtros de voz desligados, o microfone do
+// celular entrega pouco volume. Quem barra o ruído é a clareza do detectPitch.
+const VOLUME_MINIMO = 0.002;
+const DIAGNOSTICO = new URLSearchParams(location.search).has("diag");
 const LEITURAS = 5;
 const SILENCIO_MS = 600; // sem leitura válida por esse tempo, a tela volta a "Toque uma corda"
 const AFINADA_ENTRA = 5; // cents
@@ -24,6 +27,7 @@ const el = {
   modo: document.querySelector("#modo"),
   cordas: document.querySelector("#cordas"),
   hz: document.querySelector("#hz"),
+  diag: document.querySelector("#diag"),
   anuncio: document.querySelector("#anuncio"),
 };
 
@@ -186,6 +190,11 @@ function ler() {
   const volume = rms(buffer);
   conferirMudo(volume, agora);
   const freq = volume >= VOLUME_MINIMO ? detectPitch(buffer, audio.mic.sampleRate) : 0;
+  if (DIAGNOSTICO) {
+    el.diag.textContent =
+      `áudio ${audio.mic.estado()} · ${audio.mic.sampleRate} Hz · ` +
+      `volume ${numero(volume, 4)} · leitura ${numero(freq, 1)} Hz`;
+  }
 
   if (freq === 0) {
     if (leituras.length && agora - ultimaLeitura > SILENCIO_MS) {
@@ -272,6 +281,7 @@ function parar() {
 
 montarCordas();
 mostrarParado();
+el.diag.hidden = !DIAGNOSTICO;
 
 if (!microfone.suportado()) {
   mostrarAviso(
