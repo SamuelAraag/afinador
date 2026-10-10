@@ -41,7 +41,7 @@ Na raiz fica só o `index.html`, além do `README.md` e do `package.json`, que o
 | `js/afinador.js` | estados da tela |
 | `js/servicos/pitch.js` | detecção da nota, sem DOM |
 | `js/servicos/microfone.js` | acesso ao microfone, sem DOM |
-| `img/icone.svg` | logo, só o símbolo |
+| `img/icone.svg` | logo do cabeçalho e da aba |
 | `img/icone-*.png` | ícone do app, gerado de `img/icone-app.svg` |
 | `pwa/manifest.webmanifest` | manifesto para instalar na tela inicial |
 | `testes/pitch.test.js` | testes da detecção |
