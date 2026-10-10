@@ -14,6 +14,10 @@ npm start
 
 Depois abra `http://localhost:8137`, clique em "Ativar microfone" e toque uma corda.
 
+## Diagnóstico
+
+Se o afinador não reagir em algum aparelho, abra com `?diag` no fim do endereço. Aparece no rodapé o estado do áudio, a taxa de amostragem, o volume que chega do microfone e a leitura em Hz.
+
 ## Testes
 
 ```
