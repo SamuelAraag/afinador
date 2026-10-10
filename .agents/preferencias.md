@@ -13,7 +13,7 @@ Decisões do Samuel para o A-finador. Valem acima de qualquer regra genérica de
 - Cores que remetam ao violão: tampo de abeto, madeira, roseta, cordas.
 - O mais claro possível. O objetivo é se distinguir do Cifra Club, que é escuro.
 - Só tema claro. Não criar tema escuro.
-- Toda cor sai dos tokens no topo de `afinador.css`. Não escrever hex novo fora de lá.
+- Toda cor sai dos tokens no topo de `css/afinador.css`. Não escrever hex novo fora de lá.
 
 | Token | Uso |
 |---|---|

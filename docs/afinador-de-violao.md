@@ -165,7 +165,7 @@ O erro se concentra nas cordas graves e é sempre para o agudo. O motivo: quanto
 
 ## 7. Limitações e próximos passos
 
-**Erro de oitava.** Os lags 2T, 3T também correlacionam bem. No teste, dividir a soma por `buf.length - lag` para corrigir o viés acima eliminou o erro nas graves, mas fez o algoritmo errar por uma oitava inteira em algumas notas, porque o pico em 2T passou a empatar com o pico em T. Ou seja, normalizar exige mudar a regra de escolha: em vez do máximo global, pegar o primeiro pico acima de um limiar. É isso que os algoritmos YIN e McLeod (MPM) fazem, e é o que afinadores reais usam. O `pitch.js` deste repositório já implementa o MPM; o código da seção 5 fica como versão didática.
+**Erro de oitava.** Os lags 2T, 3T também correlacionam bem. No teste, dividir a soma por `buf.length - lag` para corrigir o viés acima eliminou o erro nas graves, mas fez o algoritmo errar por uma oitava inteira em algumas notas, porque o pico em 2T passou a empatar com o pico em T. Ou seja, normalizar exige mudar a regra de escolha: em vez do máximo global, pegar o primeiro pico acima de um limiar. É isso que os algoritmos YIN e McLeod (MPM) fazem, e é o que afinadores reais usam. O `js/servicos/pitch.js` deste repositório já implementa o MPM; o código da seção 5 fica como versão didática.
 
 **Custo.** A autocorrelação ingênua é O(N × lags), cerca de 1 milhão de multiplicações por buffer. Roda em tempo real sem problema, mas dá para calcular via FFT em O(N log N).
 

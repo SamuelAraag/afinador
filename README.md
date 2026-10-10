@@ -24,14 +24,17 @@ Exige Node 20 ou mais novo. Os testes cobrem a detecção com sinais sintéticos
 
 ## Estrutura
 
-| Arquivo | O que é |
+Na raiz fica só o `index.html`, além do `README.md` e do `package.json`, que o GitHub e o npm procuram ali.
+
+| Caminho | O que é |
 |---|---|
 | `index.html` | a tela |
-| `afinador.css` | estilos e tokens de cor |
-| `afinador.js` | microfone e estados da tela |
-| `pitch.js` | detecção da nota, sem DOM |
-| `pitch.test.js` | testes da detecção |
-| `icone.svg` | ícone do app |
+| `css/afinador.css` | estilos e tokens de cor |
+| `js/afinador.js` | estados da tela |
+| `js/servicos/pitch.js` | detecção da nota, sem DOM |
+| `js/servicos/microfone.js` | acesso ao microfone, sem DOM |
+| `img/icone.svg` | ícone do app |
+| `testes/pitch.test.js` | testes da detecção |
 | `docs/afinador-de-violao.md` | como funciona um afinador |
 | `docs/plano-de-implementacao.md` | plano do MVP |
 | `.agents/preferencias.md` | decisões de nome, cor e stack |
