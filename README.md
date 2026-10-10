@@ -61,4 +61,5 @@ Na raiz fica só o `index.html`, além do `README.md` e do `package.json`, que o
 | `testes/ajustes.test.js` | testes dos ajustes |
 | `docs/afinador-de-violao.md` | como funciona um afinador |
 | `docs/plano-de-implementacao.md` | plano do MVP |
+| `docs/melhorias-ux.md` | problemas de UX encontrados na revisão, ainda por corrigir |
 | `.agents/preferencias.md` | decisões de nome, cor e stack |
