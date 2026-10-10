@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { CORDAS, rms, detectPitch, centsEntre, cordaMaisProxima, mediana } from "./pitch.js";
+import { CORDAS, rms, detectPitch, centsEntre, cordaMaisProxima, mediana } from "../js/servicos/pitch.js";
 
 // Gerador determinístico, para o teste não variar entre execuções.
 function aleatorio(semente) {

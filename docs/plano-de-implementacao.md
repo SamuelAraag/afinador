@@ -44,7 +44,7 @@ Tela única, sem menu, sem rotas e sem modal.
 
 ## Detecção
 
-- Algoritmo McLeod (MPM) em `pitch.js`. A teoria e a versão didática por autocorrelação simples estão em `afinador-de-violao.md`.
+- Algoritmo McLeod (MPM) em `js/servicos/pitch.js`. A teoria e a versão didática por autocorrelação simples estão em `afinador-de-violao.md`.
 - Buffer de 4096 amostras, uma leitura a cada 50 ms, mediana das últimas 5.
 - Faixa de 65 a 400 Hz. Fora disso, sem leitura.
 - Leitura com clareza abaixo de 0,8 é descartada.
@@ -54,9 +54,9 @@ Tela única, sem menu, sem rotas e sem modal.
 | # | Passo | Entrega |
 |---|---|---|
 | 1 | Repositório e documentação | `README.md`, este plano, preferências, teoria |
-| 2 | Detecção | `pitch.js` e `pitch.test.js` |
-| 3 | Tela | `index.html`, `afinador.css`, `icone.svg` |
-| 4 | Microfone e estados | `afinador.js` |
+| 2 | Detecção | `js/servicos/pitch.js` e `testes/pitch.test.js` |
+| 3 | Tela | `index.html`, `css/afinador.css`, `img/icone.svg` |
+| 4 | Microfone e estados | `js/afinador.js` e `js/servicos/microfone.js` |
 | 5 | Conferência | testes, navegador em 320, 768 e 1280 px, teclado |
 
 ## Fora do MVP

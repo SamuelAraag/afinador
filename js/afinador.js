@@ -1,4 +1,5 @@
-import { CORDAS, rms, detectPitch, centsEntre, cordaMaisProxima, mediana } from "./pitch.js";
+import { CORDAS, rms, detectPitch, centsEntre, cordaMaisProxima, mediana } from "./servicos/pitch.js";
+import * as microfone from "./servicos/microfone.js";
 
 const TAMANHO_BUFFER = 4096;
 const INTERVALO_MS = 50;
@@ -9,7 +10,6 @@ const AFINADA_ENTRA = 5; // cents
 const AFINADA_SAI = 8; // folga para o estado não piscar
 const MUDO = 1e-5; // abaixo disso o microfone não está enviando nada, nem ruído
 const MUDO_MS = 2000;
-const CHAVE_MICROFONE = "afinador.microfone";
 
 const el = {
   notaNome: document.querySelector("#nota-nome"),
@@ -27,7 +27,7 @@ const el = {
   anuncio: document.querySelector("#anuncio"),
 };
 
-let audio = null; // { stream, ctx, analyser, buffer, timer } enquanto estiver ouvindo
+let audio = null; // { mic, timer } enquanto estiver ouvindo
 let travada = null; // corda escolhida à mão, ou null no modo automático
 let leituras = [];
 let ultimaLeitura = 0;
@@ -175,17 +175,17 @@ function conferirMudo(volume, agora) {
   } else if (!avisouMudo && agora - ultimoSom > MUDO_MS) {
     avisouMudo = true;
     mostrarAviso(
-      `O microfone "${audio.rotulo}" não está enviando som. Escolha outro em Microfone, logo abaixo do botão.`,
+      `O microfone "${audio.mic.rotulo}" não está enviando som. Escolha outro em Microfone, logo abaixo do botão.`,
     );
   }
 }
 
 function ler() {
-  audio.analyser.getFloatTimeDomainData(audio.buffer);
+  const buffer = audio.mic.ler();
   const agora = performance.now();
-  const volume = rms(audio.buffer);
+  const volume = rms(buffer);
   conferirMudo(volume, agora);
-  const freq = volume >= VOLUME_MINIMO ? detectPitch(audio.buffer, audio.ctx.sampleRate) : 0;
+  const freq = volume >= VOLUME_MINIMO ? detectPitch(buffer, audio.mic.sampleRate) : 0;
 
   if (freq === 0) {
     if (leituras.length && agora - ultimaLeitura > SILENCIO_MS) {
@@ -213,33 +213,15 @@ function botao(texto, { ativo = false, desabilitado = false } = {}) {
   el.mic.disabled = desabilitado;
 }
 
-function microfoneSalvo() {
-  try {
-    return localStorage.getItem(CHAVE_MICROFONE);
-  } catch {
-    return null;
-  }
-}
-
-function salvarMicrofone(id) {
-  try {
-    localStorage.setItem(CHAVE_MICROFONE, id);
-  } catch {
-    // Sem armazenamento, a escolha vale só para esta visita.
-  }
-}
-
-// Os nomes dos microfones só ficam disponíveis depois da permissão.
 async function listarMicrofones(idAtual) {
-  const todos = await navigator.mediaDevices.enumerateDevices();
-  const entradas = todos.filter((d) => d.kind === "audioinput" && d.deviceId !== "communications");
+  const entradas = await microfone.listar();
   el.microfone.replaceChildren();
-  entradas.forEach((d, i) => {
+  for (const entrada of entradas) {
     const opcao = document.createElement("option");
-    opcao.value = d.deviceId;
-    opcao.textContent = d.label || `Microfone ${i + 1}`;
+    opcao.value = entrada.id;
+    opcao.textContent = entrada.nome;
     el.microfone.append(opcao);
-  });
+  }
   el.microfone.value = idAtual;
   el.microfoneBloco.hidden = entradas.length < 2;
 }
@@ -248,25 +230,9 @@ async function ativar() {
   mostrarAviso("");
   botao("Aguardando permissão...", { desabilitado: true });
 
-  // Sem um microfone escolhido, pede o padrão do sistema. O padrão do
-  // navegador pode ser um dispositivo virtual (de app de reunião) que só
-  // entrega silêncio.
-  const filtros = { echoCancellation: false, noiseSuppression: false, autoGainControl: false };
-  const salvo = microfoneSalvo();
-  let stream;
+  let mic;
   try {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        // Os filtros de voz do navegador distorcem o som da corda.
-        audio: { ...filtros, deviceId: salvo ? { exact: salvo } : { ideal: "default" } },
-      });
-    } catch (erro) {
-      // O microfone salvo não existe mais (foi desconectado): volta ao padrão.
-      if (erro.name !== "OverconstrainedError") throw erro;
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: { ...filtros, deviceId: { ideal: "default" } },
-      });
-    }
+    mic = await microfone.abrir(TAMANHO_BUFFER);
   } catch (erro) {
     mostrarAviso(ERROS[erro.name] ?? "Não foi possível acessar o microfone. Tente de novo.");
     botao("Tentar novamente");
@@ -274,29 +240,13 @@ async function ativar() {
     return;
   }
 
-  const ctx = new AudioContext();
-  await ctx.resume();
-  const analyser = ctx.createAnalyser();
-  analyser.fftSize = TAMANHO_BUFFER;
-  ctx.createMediaStreamSource(stream).connect(analyser);
-
-  const faixa = stream.getAudioTracks()[0];
-  audio = {
-    stream,
-    ctx,
-    analyser,
-    buffer: new Float32Array(TAMANHO_BUFFER),
-    timer: 0,
-    rotulo: faixa.label,
-  };
+  audio = { mic, timer: 0 };
   ultimoSom = performance.now();
   avisouMudo = false;
   audio.timer = setInterval(ler, INTERVALO_MS);
-  listarMicrofones(faixa.getSettings().deviceId).catch(() => {});
+  listarMicrofones(mic.id).catch(() => {});
 
-  // Se o microfone for desconectado ou a permissão revogada no meio do uso.
-  faixa.addEventListener("ended", () => {
-    if (!audio) return;
+  mic.aoDesconectar(() => {
     parar();
     mostrarAviso("O microfone foi desconectado. Conecte de novo e ative o microfone.");
   });
@@ -311,8 +261,7 @@ async function ativar() {
 function parar() {
   if (!audio) return;
   clearInterval(audio.timer);
-  for (const faixa of audio.stream.getTracks()) faixa.stop();
-  audio.ctx.close();
+  audio.mic.fechar();
   audio = null;
   leituras = [];
   afinada = false;
@@ -324,7 +273,7 @@ function parar() {
 montarCordas();
 mostrarParado();
 
-if (!navigator.mediaDevices?.getUserMedia || !window.AudioContext) {
+if (!microfone.suportado()) {
   mostrarAviso(
     window.isSecureContext
       ? "Este navegador não dá acesso ao microfone. Abra em uma versão recente do Chrome, Firefox, Edge ou Safari."
@@ -334,7 +283,7 @@ if (!navigator.mediaDevices?.getUserMedia || !window.AudioContext) {
 } else {
   el.mic.addEventListener("click", () => (audio ? parar() : ativar()));
   el.microfone.addEventListener("change", () => {
-    salvarMicrofone(el.microfone.value);
+    microfone.salvar(el.microfone.value);
     if (!audio) return;
     parar();
     ativar();
