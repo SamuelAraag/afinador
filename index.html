@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>A-finador</title>
+  <link rel="icon" href="icone.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="afinador.css">
+</head>
+<body data-leitura="parado">
+  <main class="app">
+    <header class="topo">
+      <img src="icone.svg" alt="" width="40" height="40">
+      <div>
+        <h1>A-finador</h1>
+        <p class="apoio">Violão, afinação padrão</p>
+      </div>
+    </header>
+
+    <section class="leitura" aria-label="Leitura">
+      <p class="nota">
+        <span id="nota-nome" class="nota-nome">A</span>
+        <span id="nota-letra" class="nota-letra"></span>
+      </p>
+      <p id="instrucao" class="instrucao">Ative o microfone e toque uma corda.</p>
+
+      <div class="medidor" aria-hidden="true">
+        <div class="trilho">
+          <div class="zona"></div>
+          <div class="marca"></div>
+          <div id="ponteiro" class="ponteiro"><span></span></div>
+        </div>
+        <div class="escala"><span>Grave</span><span>Agudo</span></div>
+      </div>
+      <p id="cents" class="cents">&nbsp;</p>
+    </section>
+
+    <p id="aviso" class="aviso" role="alert" hidden></p>
+
+    <button id="mic" class="botao" type="button">Ativar microfone</button>
+
+    <div id="microfone-bloco" class="campo" hidden>
+      <label for="microfone">Microfone</label>
+      <select id="microfone"></select>
+    </div>
+
+    <section class="cordas-bloco" aria-labelledby="cordas-titulo">
+      <h2 id="cordas-titulo">Cordas</h2>
+      <p id="modo" class="apoio">Automático: a corda tocada é detectada sozinha. Toque numa corda da lista para travar nela.</p>
+      <ul id="cordas" class="cordas"></ul>
+    </section>
+
+    <p class="rodape"><span id="hz"></span><span>Lá = 440 Hz</span></p>
+
+    <p id="anuncio" class="so-leitor" aria-live="polite"></p>
+  </main>
+
+  <script type="module" src="afinador.js"></script>
+</body>
+</html>
