@@ -12,7 +12,7 @@ O navegador só libera o microfone em HTTPS ou em `localhost`, então abrir o `i
 npm start
 ```
 
-Depois abra `http://localhost:8080`, clique em "Ativar microfone" e toque uma corda.
+Depois abra `http://localhost:8137`, clique em "Ativar microfone" e toque uma corda.
 
 ## Testes
 
